@@ -8,9 +8,10 @@ import shutil
 
 @click.command()
 @click.argument("input_dir", nargs=1, type=click.Path(exists=True))
-def main(input_dir):
+@click.option("-v", "--verbose", is_flag=True)
+
+def main(input_dir,verbose):
     input_dir = pathlib.Path(input_dir)
-    print(f"DEBUG input_dir={input_dir}")
 
     config_filename = pathlib.Path(input_dir / "config.json")
     with config_filename.open() as config_file:
@@ -40,11 +41,18 @@ def main(input_dir):
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(rendered)
 
+    if verbose:
+        print(f"Rendered {config_list[0]['template']} -> {output_path}")
 
+    #static copying
     static_path = pathlib.Path(input_dir / "static")
-
     if(static_path.exists()):
         shutil.copytree(static_path, output_dir,dirs_exist_ok=True)
+
+    if verbose:
+        print(f"Rendered {static_path} -> {output_path}")
+
+    
 
 
 
