@@ -3,6 +3,7 @@ import click as click
 import pathlib
 import json
 import jinja2
+import shutil
 
 
 @click.command()
@@ -40,7 +41,10 @@ def main(input_dir):
     output_path.write_text(rendered)
 
 
+    static_path = pathlib.Path(input_dir / "static")
 
+    if(static_path.exists()):
+        shutil.copytree(static_path, output_dir,dirs_exist_ok=True)
 
 
 
