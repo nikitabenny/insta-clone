@@ -5,26 +5,42 @@ import json
 import jinja2
 
 
-def read():
-    config_filename = pathlib.Path("../insta485/config.json")
-    with config_filename.open() as config_file:
-        config_list = json.load(config_file)
+@click.command()
+@click.argument("input_dir", nargs=1, type=click.Path(exists=True))
+def main(input_dir):
+    input_dir = pathlib.Path(input_dir)
+    print(f"DEBUG input_dir={input_dir}")
 
-    print(config_list)
+    config_filename = pathlib.Path(input_dir / "config.json")
+    with config_filename.open() as config_file:
+        #returns data as python list
+        config_list = json.load(config_file)
+    
+
+    template_dir = input_dir / "templates"
+    
+    template_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(str(template_dir)),
+        autoescape=jinja2.select_autoescape(['html', 'xml']),
+    )
 
     
 
-def main():
-    """Top level command line interface."""
-    print("Hello world!")
+    template = template_env.get_template("index.html")
 
-    @click.command()
-    @click.argument("input_dir", nargs=1, type=click.Path(exists=True))
-    def main(input_dir):
-        input_dir = pathlib.Path(input_dir)
-        print(f"DEBUG input_dir={input_dir}")
+    #rendering with context
+    rendered = template.render(config_list[0]['context'])
 
-    read()
+    #render template to output file
+    url = config_list[0]['url']
+    url = url.lstrip("/")  # remove leading slash
+    output_dir = pathlib.Path("generated_html")  # convert str to Path object, when --output is provided
+    output_path = output_dir/url/"index.html"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(rendered)
+
+
+
 
 
 
